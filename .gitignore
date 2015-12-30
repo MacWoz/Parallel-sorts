@@ -6,3 +6,6 @@
 *.ptx
 *.cubin
 *.fatbin
+*.exe
+*.out
+*.app

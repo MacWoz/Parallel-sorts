@@ -54,13 +54,12 @@ void merge(int* T, int L, int R)
 	while (i <= m && j <= R) {
 		if (copyT[i-L] <= copyT[j-L]) {
 			T[k] = copyT[i-L];
-			k++;
 			i++;
 		} else {
 			T[k] = copyT[j-L];
-			k++;
 			j++;
 		}
+		k++;
 	}
 
 	while (i<=m) {

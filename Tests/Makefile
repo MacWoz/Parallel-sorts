@@ -4,7 +4,8 @@ LDFLAGS=
 SOURCES := \
 	test_mergesort.cpp \
 	../Algorithms/merge_sort.cpp \
-	../Algorithms/std_sort.cpp
+	../Algorithms/std_sort.cpp \
+	../Algorithms/quick_sort.cpp
 
 BIN := first_test
 

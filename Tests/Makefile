@@ -2,10 +2,12 @@ CC=g++
 CFLAGS=-O2 -std=c++11 -fopenmp
 LDFLAGS=
 SOURCES := \
-	test_mergesort.cpp \
+	tester.cpp \
 	../Algorithms/merge_sort.cpp \
 	../Algorithms/std_sort.cpp \
-	../Algorithms/quick_sort.cpp
+	../Algorithms/quick_sort.cpp \
+	../Algorithms/radix_sort.cpp \
+	../Algorithms/bitonic_sort.cpp
 
 BIN := first_test
 

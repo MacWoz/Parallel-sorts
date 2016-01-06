@@ -1,33 +1,30 @@
-#include "merge_sort.h"
+#include "quick_sort.h"
 #include <omp.h>
 
 std::pair<int, int> partition(int* T, int L, int R)
 {
 	int pos = rand() % (R - L + 1) + L;
-    //cout<<"partition pos= "<<pos<<endl;
-    int pivot = T[pos];
-    //cout<<"x "<<x<<endl;
-    int i = L - 1; /// i - ostatni < x, j - ostatni == x
-    int j = i;
-    for (int k=L; k<=R; k++) {
-        if (T[k] < pivot) {
-            ++i;
-            ++j;
-            std::swap(T[k], T[i]);
-            if(i != j)
+	int pivot = T[pos];
+	int i = L - 1; /// i - ostatni < x, j - ostatni == x
+	int j = i;
+	
+	for (int k=L; k<=R; k++) {
+		if (T[k] < pivot) 
+		{
+			++i;
+			++j;
+			std::swap(T[k], T[i]);
+			if(i != j)
 				std::swap(T[k], T[j]);
-        }
-
-        else if(T[k] == pivot)
-        {
-            ++j;
-            std::swap(T[k], T[j]);
-        }
-    }
-
-    if(i == -1) 
+		}
+		else if(T[k] == pivot)
+		{
+			++j;
+			std::swap(T[k], T[j]);
+		}
+	}
+	if(i == -1) 
 		i = 0;
-
 	return std::make_pair(i, j);
 }
 
@@ -59,11 +56,11 @@ void quick_sort_parallel(int* T, int L, int R)
 		{
 			#pragma omp section
 			{
-				quick_sort(T, L, R1);
+				quick_sort_parallel(T, L, R1);
 			}
 			#pragma omp section
 			{
-				quick_sort(T, L2+1, R);
+				quick_sort_parallel(T, L2+1, R);
 			}
 		}
 	}

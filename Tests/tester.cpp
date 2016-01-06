@@ -17,12 +17,16 @@ int main(int argc, char* argv[]) {
 	for (int i=0; i<n; ++i)
 		cin >> T[i];
 		
-	radix_sort(T, 0, n-1);
+	bitonic_sort(T, 0, n-1);
 	
 	if(std::is_sorted(T, T+n))
 		std::cout << "OK" << std:: endl;
 	else
 		std::cout << "FAIL" << std:: endl;
+		
+	/*for (int i=0; i<n; ++i)
+		cout << T[i] << " ";
+	cout << endl;*/
 		
 	delete [] T;
 	return 0;

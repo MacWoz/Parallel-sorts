@@ -2,39 +2,40 @@
 #include <climits>
 #include <iostream>
 
-int findProperSize(int size)
+unsigned findProperSize(unsigned size)
 {
-	int i = 1;
+	unsigned i = 1;
 	while (i < size)
 		i <<= 1;
 		
 	return i;
 }
 
-int log2(int value)
+unsigned log2(unsigned value)
 {
-	int lg = 0;
-	int ex = 1;
-	while (ex < value) {
+	unsigned lg = 0;
+	unsigned ex = 1;
+	while (ex < value)
+	{
 		ex <<= 1;
 		lg++;
 	}
 	return lg;
 }
 
-int power2(int value)
+unsigned power2(unsigned value)
 {
-	int result = 1;
-	int i=0;
-	while (i < value) {
+	unsigned result = 1;
+	unsigned i = 0;
+	while (i < value) 
+	{
 		++i;
 		result <<= 1;
 	}
 	return result;
 }
 
-
-void compare_exchange(int& value1, int& value2, int current_global_block_start, int blockSize, int pos)
+void compare_exchange(unsigned& value1, unsigned& value2, int current_global_block_start, int blockSize, int pos)
 {
 	if (pos >= current_global_block_start + blockSize/2) { // większy wcześniej
 		if (value1 < value2)
@@ -45,18 +46,18 @@ void compare_exchange(int& value1, int& value2, int current_global_block_start, 
 	}
 }
 
-void bitonic_sort(int* T, int L, int R)
+void bitonic_sort(unsigned* T, int L, int R)
 {
-	int N = R+1;
+	unsigned N = R+1;
 	N = findProperSize(N);
-	int* array = new int[N];
-	for (int i=0;i<N;++i)
-		array[i] = (i <= R) ? T[i] : INT_MAX ;
+	unsigned* array = new unsigned[N];
+	for (unsigned i=0;i<N;++i)
+		array[i] = (i <= R) ? T[i] : UINT_MAX ;
 	
-	int lg = log2(N);
+	unsigned lg = log2(N);
 	
-	for (int iter = 0; iter<lg; ++iter) {
-		int offset = power2(iter);
+	for (unsigned iter = 0; iter<lg; ++iter) {
+		int offset = (int) power2(iter);
 		int blockSize = 4*offset;
 		for (; offset > 0; offset >>= 1)
 		{
@@ -83,7 +84,7 @@ void bitonic_sort(int* T, int L, int R)
 }
 
 
-void bitonic_sort_parallel(int* T, int L, int R)
+void bitonic_sort_parallel(unsigned* T, int L, int R)
 {
 	
 }

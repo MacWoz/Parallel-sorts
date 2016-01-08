@@ -1,9 +1,9 @@
 #include "merge_sort.h"
 #include <omp.h>
 
-void merge(int* T, int L, int R);
+void merge(unsigned* T, int L, int R);
 
-void merge_sort(int* T, int L, int R)
+void merge_sort(unsigned* T, int L, int R)
 {
 	if (L >= R)
 		return ;
@@ -16,23 +16,27 @@ void merge_sort(int* T, int L, int R)
 	merge(T, L, R);
 }
 
-void merge_sort_parallel(int* T, int L, int R) 
+void merge_sort_parallel(unsigned* T, int L, int R, int threads) 
 {
 	if (L >= R)
 		return ;
-	
-	int m = (L+R)/2;
-	#pragma omp parallel shared(T) firstprivate(L, R, m)
+	if (threads <= 1) {
+		merge_sort(T, L, R);
+		return;
+	}
+		
+	int m = (L+R)/2; 
+	#pragma omp parallel shared(T) firstprivate(L, R, m, threads)
 	{
 		#pragma omp sections
 		{
 			#pragma omp section
 			{
-				merge_sort_parallel(T, L, m);
+				merge_sort_parallel(T, L, m, threads/2);
 			}
 			#pragma omp section
 			{
-				merge_sort_parallel(T, m+1, R);
+				merge_sort_parallel(T, m+1, R, threads-threads/2);
 			}
 		}
 	}
@@ -40,10 +44,10 @@ void merge_sort_parallel(int* T, int L, int R)
 	merge(T, L, R);
 }
 
-void merge(int* T, int L, int R)
+void merge(unsigned* T, int L, int R)
 {
 	int m = (L+R)/2;
-	std::vector<int> copyT(R-L+1);
+	std::vector<unsigned> copyT(R-L+1);
 	for (int i=L; i<=R; ++i)
 		copyT[i-L] = T[i];
 	

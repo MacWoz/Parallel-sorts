@@ -1,10 +1,10 @@
 #include "quick_sort.h"
 #include <omp.h>
 
-std::pair<int, int> partition(int* T, int L, int R)
+std::pair<int, int> partition(unsigned* T, int L, int R)
 {
 	int pos = rand() % (R - L + 1) + L;
-	int pivot = T[pos];
+	unsigned pivot = T[pos];
 	int i = L - 1; /// i - ostatni < x, j - ostatni == x
 	int j = i;
 	
@@ -28,7 +28,7 @@ std::pair<int, int> partition(int* T, int L, int R)
 	return std::make_pair(i, j);
 }
 
-void quick_sort(int* T, int L, int R)
+void quick_sort(unsigned* T, int L, int R)
 {
 	if (L >= R)
 		return ;
@@ -41,7 +41,7 @@ void quick_sort(int* T, int L, int R)
 	quick_sort(T, L2+1, R);
 }
 
-void quick_sort_parallel(int* T, int L, int R)
+void quick_sort_parallel(unsigned* T, int L, int R)
 {
 	if (L >= R)
 		return ;

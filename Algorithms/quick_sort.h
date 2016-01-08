@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-void quick_sort(int* T, int L, int R);
-void quick_sort_parallel(int* T, int L, int R);
+void quick_sort(unsigned* T, int L, int R);
+void quick_sort_parallel(unsigned* T, int L, int R);
 
 #endif

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-void merge_sort(int* T, int L, int R);
-void merge_sort_parallel(int* T, int L, int R);
+void merge_sort(unsigned* T, int L, int R);
+void merge_sort_parallel(unsigned* T, int L, int R, int threads);
 
 #endif

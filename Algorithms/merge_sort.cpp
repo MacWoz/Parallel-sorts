@@ -1,79 +1,111 @@
 #include "merge_sort.h"
+#include <cstring>
 #include <omp.h>
 
-void merge(unsigned* T, int L, int R);
+void merge(unsigned* T1, int size1, unsigned* T2, int size2, unsigned* copy);
+void merge_parallel(unsigned* first, int first_size, unsigned *second, int second_size, unsigned* dest, int threads);
+int binsearch(unsigned *T, unsigned n, int value);
 
-void merge_sort(unsigned* T, int L, int R)
+void merge_sort(unsigned* T, int n, unsigned* copyT)
 {
-	if (L >= R)
+	if (n <= 1)
 		return ;
 	
-	int m = (L+R)/2;
+	merge_sort(T, n/2, copyT);
+	merge_sort(T + n/2, n - n/2, copyT + n/2);
 	
-	merge_sort(T, L, m);
-	merge_sort(T, m+1, R);
-	
-	merge(T, L, R);
+	merge(T, n/2, T + n/2, n - n/2, copyT);
+	memcpy(T, copyT, n * sizeof(int));
 }
 
-void merge_sort_parallel(unsigned* T, int L, int R, int threads) 
+void merge_sort_parallel(unsigned* T, int n, int threads, unsigned* copyT) 
 {
-	if (L >= R)
-		return ;
+	if (n <= 1)
+		return;
 	if (threads <= 1) {
-		merge_sort(T, L, R);
+		merge_sort(T, n, copyT);
 		return;
 	}
-		
-	int m = (L+R)/2; 
-	#pragma omp parallel shared(T) firstprivate(L, R, m, threads)
+	
+	#pragma omp parallel sections
 	{
-		#pragma omp sections
+		#pragma omp section
 		{
-			#pragma omp section
-			{
-				merge_sort_parallel(T, L, m, threads/2);
-			}
-			#pragma omp section
-			{
-				merge_sort_parallel(T, m+1, R, threads-threads/2);
-			}
+			merge_sort_parallel(T, n/2, threads/2, copyT);
+		}
+		#pragma omp section
+		{
+			merge_sort_parallel(T + n/2, n - n/2, threads - threads/2, copyT + n/2);
 		}
 	}
-	
-	merge(T, L, R);
+
+	merge_parallel(T, n/2, T + n/2, n - n/2, copyT, threads);
+	memcpy(T, copyT, n * sizeof(int));
 }
 
-void merge(unsigned* T, int L, int R)
+int binsearch(unsigned *T, unsigned n, int value) 
 {
-	int m = (L+R)/2;
-	std::vector<unsigned> copyT(R-L+1);
-	for (int i=L; i<=R; ++i)
-		copyT[i-L] = T[i];
-	
-	int i=L;
-    int j=m+1;
-    int k=L;
+	int L = 0, R = n;
+	while (L < R) 
+	{
+		int m = (L+R)/2;
+		if (T[m] < value)
+			L = m + 1;
+		else
+			R = m;
+	}
+	return L;
+}
 
-	while (i <= m && j <= R) {
-		if (copyT[i-L] <= copyT[j-L]) {
-			T[k] = copyT[i-L];
-			i++;
+void merge(unsigned* T1, int size1, unsigned* T2, int size2, unsigned* copy) 
+{
+	while (size1 > 0 && size2 > 0) {
+		if (*T1 < *T2) {
+			*copy = *T1;
+			T1++;
+			size1--;
 		} else {
-			T[k] = copyT[j-L];
-			j++;
+			*copy = *T2;
+			T2++;
+			size2--;
 		}
-		k++;
+		copy++;
+	}
+	if (size1 > 0)
+		memcpy(copy, T1, size1*sizeof(int));
+	if (size2 > 0)
+		memcpy(copy, T2, size2*sizeof(int));
+}
+
+void merge_parallel(unsigned* T1, int size1, unsigned* T2, int size2, unsigned* copy, int threads) 
+{
+	if (threads <= 1) {
+		merge(T1, size1, T2, size2, copy);
+		return;
+	}
+	if (size1 < size2) {
+		std::swap(T1, T2);
+		std::swap(size1, size2);
 	}
 
-	while (i<=m) {
-		T[k] = copyT[i-L];
-		k++;
-		i++;
-	}
-	while (j<=R) {
-		T[k] = copyT[j-L];
-		k++;
-		j++;
+	if (size1 <= 0) 
+		return;
+
+	unsigned mid = T1[size1 / 2];
+	int second_half_size = binsearch(T2, size2, mid);
+	copy[size1 / 2 + second_half_size] = mid;
+
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			merge_parallel(T1, size1 / 2, T2, second_half_size, copy, threads / 2);
+		}
+		#pragma omp section
+		{
+			merge_parallel(T1 + size1 / 2 + 1, size1 - size1 / 2 - 1,
+						   T2 + second_half_size, size2 - second_half_size,
+						   copy + size1 / 2 + second_half_size + 1, threads - threads / 2);
+		}
 	}
 }

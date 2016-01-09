@@ -41,11 +41,14 @@ void quick_sort(unsigned* T, int L, int R)
 	quick_sort(T, L2+1, R);
 }
 
-void quick_sort_parallel(unsigned* T, int L, int R)
+void quick_sort_parallel(unsigned* T, int L, int R, int threads)
 {
 	if (L >= R)
 		return ;
-		
+	if (threads <= 1) {
+		quick_sort(T, L, R);
+		return ;
+	}
 	std::pair<int, int> parts = partition(T, L, R);
 	int R1 = parts.first;
 	int L2 = parts.second;
@@ -56,11 +59,11 @@ void quick_sort_parallel(unsigned* T, int L, int R)
 		{
 			#pragma omp section
 			{
-				quick_sort_parallel(T, L, R1);
+				quick_sort_parallel(T, L, R1, threads/2);
 			}
 			#pragma omp section
 			{
-				quick_sort_parallel(T, L2+1, R);
+				quick_sort_parallel(T, L2+1, R, threads - threads/2);
 			}
 		}
 	}

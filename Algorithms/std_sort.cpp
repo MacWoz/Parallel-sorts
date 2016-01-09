@@ -1,7 +1,7 @@
 #include "std_sort.h"
 #include <algorithm>
 
-void std_sort(unsigned* T, int L, int R)
+void std_sort(unsigned* T, int n)
 {
-	std::sort(T, T+R+1);
+	std::sort(T, T+n);
 }

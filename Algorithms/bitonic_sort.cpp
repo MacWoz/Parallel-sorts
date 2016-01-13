@@ -3,123 +3,86 @@
 #include <iostream>
 #include <cstring>
 
-unsigned findProperSize(unsigned size)
+void sequential_merge(unsigned* T, int length, bool up)
 {
-	unsigned i = 1;
-	while (i < size)
-		i <<= 1;
-		//qqq
-	return i;
-}
+	if(length == 1)
+		return;
 
-unsigned log2(unsigned value)
-{
-	unsigned lg = 0;
-	unsigned ex = 1;
-	while (ex < value)
-	{
-		ex <<= 1;
-		lg++;
-	}
-	return lg;
-}
-
-unsigned power2(unsigned value)
-{
-	unsigned result = 1;
-	unsigned i = 0;
-	while (i < value) 
-	{
-		++i;
-		result <<= 1;
-	}
-	return result;
-}
-
-void compare_exchange(unsigned& value1, unsigned& value2, int current_global_block_start, int blockSize, int pos)
-{
-	if (pos >= current_global_block_start + blockSize/2) { // większy wcześniej
-		if (value1 < value2)
-			std::swap(value1, value2);
-	} else {
-		if (value1 > value2)
-			std::swap(value1, value2);
-	}
-}
-
-void bitonic_sort(unsigned* T, int L, int R)
-{
-	unsigned N = R+1;
-	N = findProperSize(N);
-	unsigned* array = new unsigned[N];
+	int half_length = length >> 1;
 	
-	memcpy(array, T, (R+1)*sizeof(unsigned));
-	for (int i=R+1;i<N;++i)
-		array[i] = UINT_MAX;
+	for(int i=0; i < half_length; i++)
+	{
+		if((T[i] > T[i + half_length]) == up)
+			std::swap(T[i], T[i + half_length]);
+	}
+
+	sequential_merge(T, half_length, up);
+	sequential_merge(T + half_length, half_length, up);
+}
+
+void parallel_merge(unsigned* T, int length, int threads, bool up)
+{
+	if(length == 1)
+		return;
+	if (threads == 1)
+	{
+		sequential_merge(T, length, up);
+		return;
+	}
 		
-	unsigned lg = log2(N);
+	int half_length = length >> 1;
 	
-	for (unsigned iter = 0; iter<lg; ++iter) {
-		int offset = (int) power2(iter);
-		int blockSize = 4*offset;
-		for (; offset > 0; offset >>= 1)
+	#pragma omp parallel for shared(T) firstprivate(half_length, up) 
+	for(int i=0; i < half_length; i++)
+	{
+		if((T[i] > T[i + half_length]) == up)
+			std::swap(T[i], T[i + half_length]);
+	}
+			
+	#pragma omp parallel sections 
+	{
+		#pragma omp section
 		{
-			int current_global_block_start = -blockSize;
-			int current_block_start = -2*offset;
-			for (int i=0;i<N;++i) {
-				if (i % blockSize == 0)
-					current_global_block_start += blockSize;
-					
-				if (i % (offset << 1) == 0)
-					current_block_start += 2*offset;
-					
-				if (i >= current_block_start + offset)
-					continue;
-				
-				compare_exchange(array[i], array[i+offset], current_global_block_start, blockSize, i);
-			}
+			parallel_merge(T, half_length, threads >> 1, up);
+		}
+		#pragma omp section
+		{
+			parallel_merge(T + half_length, half_length, threads - threads/2, up);
 		}
 	}
-	for (int i=0;i<R+1;++i)
-		T[i] = array[i];
-	
-	delete [] array;
 }
 
-
-void bitonic_sort_parallel(unsigned* T, int L, int R)
+void bitonic_sort(unsigned* T, int length, bool up)
 {
-	unsigned N = R+1;
-	N = findProperSize(N);
-	unsigned* array = new unsigned[N];
-	for (unsigned i=0;i<N;++i)
-		array[i] = (i <= R) ? T[i] : UINT_MAX ;
+	if(length == 1)
+		return;
+		
+	bitonic_sort(T, length >> 1, up);
+	bitonic_sort(T + length/2, length >> 1, !up);
+
+	sequential_merge(T, length, up);
+}
+
+void bitonic_sort_parallel(unsigned* T, int length, int threads, bool up)
+{
+	if(length == 1)
+		return;
+	if (threads == 1)
+	{
+		bitonic_sort(T, length, up);
+		return;
+	}
 	
-	unsigned lg = log2(N);
-	
-	for (unsigned iter = 0; iter<lg; ++iter) {
-		int offset = (int) power2(iter);
-		int blockSize = 4*offset;
-		for (; offset > 0; offset >>= 1)
+	#pragma omp parallel sections 
+	{
+		#pragma omp section
 		{
-			int current_global_block_start = -blockSize;
-			int current_block_start = -2*offset;
-			for (int i=0;i<N;++i) {
-				if (i % blockSize == 0)
-					current_global_block_start += blockSize;
-					
-				if (i % (offset << 1) == 0)
-					current_block_start += 2*offset;
-					
-				if (i >= current_block_start + offset)
-					continue;
-				
-				compare_exchange(array[i], array[i+offset], current_global_block_start, blockSize, i);
-			}
+			bitonic_sort_parallel(T, length >> 1, threads >> 1, up);
+		}
+		#pragma omp section
+		{
+			bitonic_sort_parallel(T + length/2, length >> 1, threads - threads/2, !up);
 		}
 	}
-	for (int i=0;i<R+1;++i)
-		T[i] = array[i];
-	
-	delete [] array;
+	parallel_merge(T, length, threads, up);
 }

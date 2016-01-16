@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 	for (int i=0; i<n; ++i)
 		std::cin >> T[i];
 	
-	test_bitonic_sort_parallel(T, n);
+	test_quick_sort_parallel(T, n);
 	assert(std::is_sorted(T, T+n));
 	
 	//std::cout << n << std::endl;

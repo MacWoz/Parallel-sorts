@@ -24,7 +24,7 @@ void parallel_merge(unsigned* T, int length, int threads, bool up)
 {
 	if(length == 1)
 		return;
-	if (threads == 1)
+	if (threads <= 1)
 	{
 		sequential_merge(T, length, up);
 		return;
@@ -32,14 +32,14 @@ void parallel_merge(unsigned* T, int length, int threads, bool up)
 		
 	int half_length = length >> 1;
 	
-	#pragma omp parallel for shared(T) firstprivate(half_length, up) 
+	#pragma omp parallel for num_threads(threads) firstprivate(T, half_length, up) schedule(guided)
 	for(int i=0; i < half_length; i++)
 	{
 		if((T[i] > T[i + half_length]) == up)
 			std::swap(T[i], T[i + half_length]);
 	}
 			
-	#pragma omp parallel sections 
+	#pragma omp parallel sections num_threads(threads)
 	{
 		#pragma omp section
 		{
@@ -73,7 +73,7 @@ void bitonic_sort_parallel(unsigned* T, int length, int threads, bool up)
 		return;
 	}
 	
-	#pragma omp parallel sections 
+	#pragma omp parallel sections num_threads(threads)
 	{
 		#pragma omp section
 		{

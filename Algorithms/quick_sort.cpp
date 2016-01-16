@@ -53,18 +53,15 @@ void quick_sort_parallel(unsigned* T, int L, int R, int threads)
 	int R1 = parts.first;
 	int L2 = parts.second;
 	
-	#pragma omp parallel
+	#pragma omp parallel sections num_threads(threads)
 	{
-		#pragma omp sections
+		#pragma omp section
 		{
-			#pragma omp section
-			{
-				quick_sort_parallel(T, L, R1, threads/2);
-			}
-			#pragma omp section
-			{
-				quick_sort_parallel(T, L2+1, R, threads - threads/2);
-			}
+			quick_sort_parallel(T, L, R1, threads/2);
+		}
+		#pragma omp section
+		{
+			quick_sort_parallel(T, L2+1, R, threads - threads/2);
 		}
 	}
 }

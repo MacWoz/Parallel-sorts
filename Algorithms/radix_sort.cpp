@@ -74,7 +74,7 @@ void radix_sort(unsigned* T, int N)
 void radix_sort_parallel(unsigned* T, int N)
 {
 	unsigned andValue = 1;
-	
+	int threads = omp_get_max_threads();
 	unsigned* Tcopy = new unsigned[N];
 	for (int i=0;i<31;++i)
 	{
@@ -85,7 +85,7 @@ void radix_sort_parallel(unsigned* T, int N)
 			
 		std::vector<int> Falses(N, 0);
 		
-		#pragma omp parallel for firstprivate(N, andValue) schedule (guided)
+		#pragma omp parallel for num_threads(threads) firstprivate(N, Falses, source, andValue) schedule (guided)
 		for(unsigned j=0; j<N ;++j)
 			if ((source[j] & andValue) == 0)
 				Falses[j] = 1;
@@ -94,7 +94,7 @@ void radix_sort_parallel(unsigned* T, int N)
 			
 		int totalFalses = Falses[N-1];
 		
-		#pragma omp parallel for firstprivate(N, andValue, totalFalses) schedule (guided)
+		#pragma omp parallel for num_threads(threads) firstprivate(N, source, destination, andValue, totalFalses) schedule (guided)
 		for (int j=0;j<N;++j) {
 			if ((source[j] & andValue) == 0)
 				destination[Falses[j] - 1] = source[j];

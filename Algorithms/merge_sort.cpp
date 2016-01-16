@@ -22,12 +22,13 @@ void merge_sort_parallel(unsigned* T, int n, int threads, unsigned* copyT)
 {
 	if (n <= 1)
 		return;
-	if (threads <= 1) {
+	if (threads <= 1) 
+	{
 		merge_sort(T, n, copyT);
 		return;
 	}
 	
-	#pragma omp parallel sections
+	#pragma omp parallel sections num_threads(threads)
 	{
 		#pragma omp section
 		{
@@ -95,7 +96,7 @@ void merge_parallel(unsigned* T1, int size1, unsigned* T2, int size2, unsigned* 
 	int second_half_size = binsearch(T2, size2, mid);
 	copy[size1 / 2 + second_half_size] = mid;
 
-	#pragma omp parallel sections
+	#pragma omp parallel sections num_threads(threads)
 	{
 		#pragma omp section
 		{

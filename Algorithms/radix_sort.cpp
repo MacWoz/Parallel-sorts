@@ -39,7 +39,7 @@ void radix_sort(unsigned* T, int N)
 	unsigned andValue = 1;
 	
 	unsigned* Tcopy = new unsigned[N];
-	for (int i=0;i<31;++i)
+	for (int i=0;i<32;++i)
 	{
 		unsigned* source = (i%2 == 0) ? T : Tcopy;
 		unsigned* destination = (i%2 == 0) ? Tcopy : T;
@@ -76,7 +76,7 @@ void radix_sort_parallel(unsigned* T, int N)
 	unsigned andValue = 1;
 	int threads = omp_get_max_threads();
 	unsigned* Tcopy = new unsigned[N];
-	for (int i=0;i<31;++i)
+	for (int i=0;i<32;++i)
 	{
 		unsigned* source = (i%2 == 0) ? T : Tcopy;
 		unsigned* destination = (i%2 == 0) ? Tcopy : T;
